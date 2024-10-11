@@ -29,7 +29,7 @@ namespace CodeChallenge.Config
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                SeedEmployeeDB(app.Services);
+                SeedEmployeeDB();
             }
 
             app.UseAuthorization();
@@ -39,35 +39,23 @@ namespace CodeChallenge.Config
             return app;
         }
 
-        public void AddServices(IServiceCollection services)
+        private void AddServices(IServiceCollection services)
         {
-            // Adding Contexts for each database
-            services.AddDbContext<EmployeeContext>(options =>
-            {
-                options.UseInMemoryDatabase("EmployeeDB");
-            });
-
-            services.AddDbContext<CompensationContext>(options =>
-            {
-                options.UseInMemoryDatabase("CompensationDB");
-            });
 
             services.AddScoped<IEmployeeService, EmployeeService>();
-            services.AddScoped<IEmployeeRepository, EmployeeRespository>(); // Note the typo in 'Respository'
+            services.AddScoped<IEmployeeRepository, EmployeeRespository>();
+            // Adding the ReportingStructureService that I created
             services.AddScoped<IReportingStructureService, ReportingStructureService>();
-            services.AddScoped<ICompensationService, CompensationService>();
-            services.AddScoped<ICompensationRepository, CompensationRepository>();
 
             services.AddControllers();
         }
 
-        private void SeedEmployeeDB(IServiceProvider serviceProvider)
+        private void SeedEmployeeDB()
         {
-            using (var scope = serviceProvider.CreateScope())
-            {
-                var context = scope.ServiceProvider.GetRequiredService<EmployeeContext>();
-                DatabaseSeeder.SeedDatabase(context).Wait();
-            }
+            new EmployeeDataSeeder(
+                new EmployeeContext(
+                    new DbContextOptionsBuilder<EmployeeContext>().UseInMemoryDatabase("EmployeeDB").Options
+            )).Seed().Wait();
         }
     }
 }
