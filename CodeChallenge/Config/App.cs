@@ -29,7 +29,7 @@ namespace CodeChallenge.Config
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                SeedEmployeeDB();
+                SeedEmployeeDB(app.Services);
             }
 
             app.UseAuthorization();
@@ -39,23 +39,35 @@ namespace CodeChallenge.Config
             return app;
         }
 
-        private void AddServices(IServiceCollection services)
+        public void AddServices(IServiceCollection services)
         {
+            // Adding Contexts for each database
+            services.AddDbContext<EmployeeContext>(options =>
+            {
+                options.UseInMemoryDatabase("EmployeeDB");
+            });
+
+            services.AddDbContext<CompensationContext>(options =>
+            {
+                options.UseInMemoryDatabase("CompensationDB");
+            });
 
             services.AddScoped<IEmployeeService, EmployeeService>();
-            services.AddScoped<IEmployeeRepository, EmployeeRespository>();
-            // Adding the ReportingStructureService that I created
+            services.AddScoped<IEmployeeRepository, EmployeeRespository>(); // Note the typo in 'Respository'
             services.AddScoped<IReportingStructureService, ReportingStructureService>();
+            services.AddScoped<ICompensationService, CompensationService>();
+            services.AddScoped<ICompensationRepository, CompensationRepository>();
 
             services.AddControllers();
         }
 
-        private void SeedEmployeeDB()
+        private void SeedEmployeeDB(IServiceProvider serviceProvider)
         {
-            new EmployeeDataSeeder(
-                new EmployeeContext(
-                    new DbContextOptionsBuilder<EmployeeContext>().UseInMemoryDatabase("EmployeeDB").Options
-            )).Seed().Wait();
+            using (var scope = serviceProvider.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<EmployeeContext>();
+                DatabaseSeeder.SeedDatabase(context).Wait();
+            }
         }
     }
 }
