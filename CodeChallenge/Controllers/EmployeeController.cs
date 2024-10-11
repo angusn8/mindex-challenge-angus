@@ -7,8 +7,17 @@ using Microsoft.Extensions.Logging;
 using CodeChallenge.Services;
 using CodeChallenge.Models;
 
+/*
+ * File: EmployeeController.cs
+ * Modified By: Nathaniel Angus
+ * Modified: 2024-10-10
+ * Description: This file defines the controller for handling Employee-related HTTP requests.
+ */
 namespace CodeChallenge.Controllers
 {
+    /// <summary>
+    /// Controller for handling Employee-related HTTP requests.
+    /// </summary>
     [ApiController]
     [Route("api/employee")]
     public class EmployeeController : ControllerBase
@@ -22,6 +31,11 @@ namespace CodeChallenge.Controllers
             _employeeService = employeeService;
         }
 
+        /// <summary>
+        /// Creates a new employee.
+        /// </summary>
+        /// <param name="employee">The employee data to create.</param>
+        /// <returns>The created employee record.</returns>
         [HttpPost]
         public IActionResult CreateEmployee([FromBody] Employee employee)
         {
@@ -32,6 +46,11 @@ namespace CodeChallenge.Controllers
             return CreatedAtRoute("getEmployeeById", new { id = employee.EmployeeId }, employee);
         }
 
+        /// <summary>
+        /// Retrieves an employee by their ID.
+        /// </summary>
+        /// <param name="id">The ID of the employee.</param>
+        /// <returns>The employee if found, otherwise 404 Not Found.</returns>
         [HttpGet("{id}", Name = "getEmployeeById")]
         public IActionResult GetEmployeeById(String id)
         {
@@ -45,6 +64,12 @@ namespace CodeChallenge.Controllers
             return Ok(employee);
         }
 
+        /// <summary>
+        /// Updates an existing employee.
+        /// </summary>
+        /// <param name="id">The ID of the employee to update.</param>
+        /// <param name="newEmployee">The updated employee data.</param>
+        /// <returns>The updated employee if successful, otherwise 404 Not Found.</returns>
         [HttpPut("{id}")]
         public IActionResult ReplaceEmployee(String id, [FromBody]Employee newEmployee)
         {

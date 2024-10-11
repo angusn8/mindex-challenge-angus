@@ -6,8 +6,17 @@ using CodeChallenge.Models;
 using Microsoft.Extensions.Logging;
 using CodeChallenge.Repositories;
 
+/*
+ * File: EmployeeService.cs
+ * Modified By: Nathaniel Angus
+ * Modified: 2024-10-10
+ * Description: This file implements the Employee service for handling business logic.
+ */
 namespace CodeChallenge.Services
 {
+    /// <summary>
+    /// Service for handling Employee business logic.
+    /// </summary>
     public class EmployeeService : IEmployeeService
     {
         private readonly IEmployeeRepository _employeeRepository;
@@ -19,6 +28,11 @@ namespace CodeChallenge.Services
             _logger = logger;
         }
 
+        /// <summary>
+        /// Creates a new employee.
+        /// </summary>
+        /// <param name="employee">The employee to create.</param>
+        /// <returns>The created employee.</returns>
         public Employee Create(Employee employee)
         {
             if(employee != null)
@@ -30,6 +44,11 @@ namespace CodeChallenge.Services
             return employee;
         }
 
+        /// <summary>
+        /// Retrieves an employee by their ID.
+        /// </summary>
+        /// <param name="id">The ID of the employee.</param>
+        /// <returns>The employee if found, otherwise null.</returns>
         public Employee GetById(string id)
         {
             if(!String.IsNullOrEmpty(id))
@@ -40,6 +59,12 @@ namespace CodeChallenge.Services
             return null;
         }
 
+        /// <summary>
+        /// Replaces an existing employee with a new employee.
+        /// </summary>
+        /// <param name="originalEmployee">The original employee to be replaced.</param>
+        /// <param name="newEmployee">The new employee data.</param>
+        /// <returns>The new employee if successful, otherwise null.</returns>
         public Employee Replace(Employee originalEmployee, Employee newEmployee)
         {
             if(originalEmployee != null)

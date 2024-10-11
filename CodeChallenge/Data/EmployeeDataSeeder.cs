@@ -10,8 +10,8 @@ namespace CodeChallenge.Data
 {
     public class EmployeeDataSeeder
     {
-        private EmployeeContext _employeeContext;
-        private const String EMPLOYEE_SEED_DATA_FILE = "resources/EmployeeSeedData.json";
+        private readonly EmployeeContext _employeeContext;
+        private const string EMPLOYEE_SEED_DATA_FILE = "resources/EmployeeSeedData.json";
 
         public EmployeeDataSeeder(EmployeeContext employeeContext)
         {
@@ -20,7 +20,7 @@ namespace CodeChallenge.Data
 
         public async Task Seed()
         {
-            if(!_employeeContext.Employees.Any())
+            if (!_employeeContext.Employees.Any())
             {
                 List<Employee> employees = LoadEmployees();
                 _employeeContext.Employees.AddRange(employees);
@@ -46,23 +46,23 @@ namespace CodeChallenge.Data
 
         private void FixUpReferences(List<Employee> employees)
         {
-            var employeeIdRefMap = from employee in employees
-                                select new { Id = employee.EmployeeId, EmployeeRef = employee };
+            var employeeIdRefMap = employees.ToDictionary(e => e.EmployeeId, e => e);
 
-            employees.ForEach(employee =>
+            foreach (var employee in employees)
             {
-                
                 if (employee.DirectReports != null)
                 {
                     var referencedEmployees = new List<Employee>(employee.DirectReports.Count);
-                    employee.DirectReports.ForEach(report =>
+                    foreach (var report in employee.DirectReports)
                     {
-                        var referencedEmployee = employeeIdRefMap.First(e => e.Id == report.EmployeeId).EmployeeRef;
-                        referencedEmployees.Add(referencedEmployee);
-                    });
+                        if (employeeIdRefMap.TryGetValue(report.EmployeeId, out Employee referencedEmployee))
+                        {
+                            referencedEmployees.Add(referencedEmployee);
+                        }
+                    }
                     employee.DirectReports = referencedEmployees;
                 }
-            });
+            }
         }
     }
 }
