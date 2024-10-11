@@ -1,22 +1,26 @@
 using System;
-using System.Linq;
-using System.Threading.Tasks;
-using CodeChallenge.Models;
 
 /*
  * File: ReportingStructure.cs
  * Author: Nathaniel Angus
  * Created: 2024-10-10
- * Description: This file contains the model for an employee's reporting structure
+ * Description: This file defines the ReportingStructure model representing an employee's reporting structure.
  */
-namespace CodeChallenge.Models 
+namespace CodeChallenge.Models
 {
-    // This class contains the model of an employees
-    public class ReportingStructure 
+    /// <summary>
+    /// Represents an employee's reporting structure.
+    /// </summary>
+    public class ReportingStructure
     {
-        // Gets or sets the employee for the reporting structure
-        public Employee employee { get; set; }
-        // Gets or sets the number of direct reports for the employee
-        public int numberOfReports { get; set; }
+        /// <summary>
+        /// The employee for whom this reporting structure is created.
+        /// </summary>
+        public Employee Employee { get; set; }
+
+        /// <summary>
+        /// The number of reports under this employee.
+        /// </summary>
+        public int NumberOfReports { get; set; }
     }
 }

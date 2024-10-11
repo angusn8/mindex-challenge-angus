@@ -1,84 +1,90 @@
 using System;
+using System.Collections.Generic;
 using CodeChallenge.Models;
-using Microsoft.Extensions.Logging;
 using CodeChallenge.Repositories;
+using Microsoft.Extensions.Logging;
 
 /*
  * File: ReportingStructureService.cs
  * Author: Nathaniel Angus
  * Created: 2024-10-10
- * Description: This file adds business logic to create reporting structures
+ * Description: This file implements the ReportingStructure service for handling business logic.
  */
 namespace CodeChallenge.Services
 {
-    // Manages reporting structures implementing IReportingStructureService
+    /// <summary>
+    /// Service for handling ReportingStructure business logic.
+    /// </summary>
     public class ReportingStructureService : IReportingStructureService
     {
-        // Repository for data operations with employees
         private readonly IEmployeeRepository _employeeRepository;
-
-        // Log information and errors
         private readonly ILogger<ReportingStructureService> _logger;
 
-        // Constructor to initialize ReportingStructureService
         public ReportingStructureService(ILogger<ReportingStructureService> logger, IEmployeeRepository employeeRepository)
         {
             _employeeRepository = employeeRepository;
             _logger = logger;
         }
 
-        // Create a reporting structure for an employee
-        public ReportingStructure Create(String employeeId) 
+        /// <summary>
+        /// Retrieves a reporting structure for an employee by their ID.
+        /// </summary>
+        /// <param name="employeeId">The ID of the employee.</param>
+        /// <returns>The reporting structure for the employee.</returns>
+        public ReportingStructure GetByEmployeeId(string employeeId)
         {
-            // Get the employee by their id
-            Employee employee = _employeeRepository.GetById(employeeId);
-
-            // Recursive case
-            if (employee == null)
+            if (string.IsNullOrEmpty(employeeId))
             {
-                _logger.LogWarning($"Employee with ID '{employeeId}' not found");
+                _logger.LogWarning("Empty employeeId provided");
                 return null;
             }
 
-            // Get a total count of reports
-            int totalReports = GetTotalReports(employee);
+            var employee = _employeeRepository.GetById(employeeId);
+            if (employee == null)
+            {
+                _logger.LogWarning($"Employee with ID {employeeId} not found");
+                return null;
+            }
 
-            // Create a new ReportingStructure instance and set its properties
-            var reportingStructure = new ReportingStructure();
-            reportingStructure.employee = employee;
-            reportingStructure.numberOfReports = totalReports;
+            _logger.LogInformation($"Found employee: {employee.FirstName} {employee.LastName}");
 
+            var reportCount = CountTotalReports(employee);
+            _logger.LogInformation($"Counted {reportCount} total reports for employee {employeeId}");
+
+            var reportingStructure = new ReportingStructure
+            {
+                Employee = employee,
+                NumberOfReports = reportCount
+            };
 
             return reportingStructure;
         }
 
-        // Get the total number of reports for an employee
-        public int GetTotalReports(Employee employee)
+        /// <summary>
+        /// Recursively counts the total number of reports under an employee.
+        /// </summary>
+        /// <param name="employee">The employee to count reports for.</param>
+        /// <returns>The total number of reports.</returns>
+        private int CountTotalReports(Employee employee)
         {
-            // Initialize a count of reports
-            int reportCount = 0;
-
-            // Base case
-            if (employee == null)
+            if (employee.DirectReports == null || employee.DirectReports.Count == 0)
             {
-                return reportCount;
+                return 0;
             }
 
-            // Count direct reports
-            if (employee.DirectReports != null)
+            int totalReports = 0;
+            foreach (var directReport in employee.DirectReports)
             {
-                // Add direct reports to count
-                reportCount += employee.DirectReports.Count;
-
-                // Recursively count indirect reports
-                foreach (var directReport in employee.DirectReports) 
+                totalReports++;
+                var fullDirectReport = _employeeRepository.GetById(directReport.EmployeeId);
+                if (fullDirectReport != null)
                 {
-                    // Add indirect reports
-                    reportCount += GetTotalReports(directReport);
+                    _logger.LogInformation($"Counting reports for {fullDirectReport.FirstName} {fullDirectReport.LastName}");
+                    totalReports += CountTotalReports(fullDirectReport);
                 }
             }
 
-            return reportCount;
+            return totalReports;
         }
     }
 }

@@ -11,61 +11,42 @@ using CodeChallenge.Models;
  * File: ReportingStructureController.cs
  * Author: Nathaniel Angus
  * Created: 2024-10-10
- * Description: This file controls the reporting structure API endpoints
+ * Description: This file defines the controller for handling ReportingStructure related HTTP requests.
  */
 namespace CodeChallenge.Controllers
 {
-    // Controller for reporting structures
+    /// <summary>
+    /// Controller for handling ReportingStructure-related HTTP requests.
+    /// </summary>
     [ApiController]
     [Route("api/reportingstructure")]
     public class ReportingStructureController : ControllerBase
     {
-        // Log information and errors
-        private readonly ILogger _logger;
-
-        // Service for reporting structures
+        private readonly ILogger<ReportingStructureController> _logger;
         private readonly IReportingStructureService _reportingStructureService;
 
-        // Constructor to initialize ReportingStructureController
         public ReportingStructureController(ILogger<ReportingStructureController> logger, IReportingStructureService reportingStructureService)
         {
             _logger = logger;
             _reportingStructureService = reportingStructureService;
         }
 
-        // Get a reporting structure by employee id
-        [HttpGet("{id}", Name = "getReportingStructureById")]
-        public IActionResult GetReportingStructureById(String id)
+        /// <summary>
+        /// Retrieves a reporting structure for an employee by their ID.
+        /// </summary>
+        /// <param name="employeeId">The ID of the employee.</param>
+        /// <returns>The reporting structure if found, otherwise 404 Not Found.</returns>
+        [HttpGet("{employeeId}")]
+        public IActionResult GetReportingStructureByEmployeeId(string employeeId)
         {
-            try 
-            {
-                // Log the request
-                _logger.LogDebug($"Received reporting structure get request for '{id}'");
+            _logger.LogDebug($"Received reporting structure get request for employee '{employeeId}'");
 
-                // Create a reporting structure
-                var reportingStructure = _reportingStructureService.Create(id);
+            var reportingStructure = _reportingStructureService.GetByEmployeeId(employeeId);
 
-                // If the reporting structure is not found, return a 404 error
-                if (reportingStructure == null)
-                {
-                    return NotFound();
-                }
+            if (reportingStructure == null)
+                return NotFound();
 
-                // Return the reporting structure
-                return Ok(reportingStructure);
-            }
-            catch (ArgumentException ex)
-            {
-                // Log a warning if the employee id is invalid
-                _logger.LogWarning(ex, $"Invalid EmployeeID: {id}");
-                return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                // Log an error if there is an error getting the reporting structure
-                _logger.LogError(ex, $"Error getting reporting structure for employee '{id}'");
-                return StatusCode(500);
-            }            
+            return Ok(reportingStructure);
         }
     }
 }
